@@ -1,8 +1,10 @@
-###################################################################################
-#                             From Blast to GFF3                                  #
-#The script will convert a Blast output to a gff3, by default it will use blast 6 #
-#out format, but each GFF3 field can be filled based on custom blast output       #                      
-################################################################################### 
+#######################################################################################################
+#                             From Blast to GFF3                                                      #
+#The script will convert a Blast output to a gff3, by default it will use blast 6  out format,        #
+#but each GFF3 field can be filled based on custom blast output.                                      #
+#User can use both query and subject coordinates, just pay attention to select the right columns      #                                                           
+####################################################################################################### 
+#!/usr/bin/env python
 
 import pandas as pd
 import argparse
@@ -14,10 +16,10 @@ import os
 
 parser = argparse.ArgumentParser(description='Convert blast output to gff3.')
 parser.add_argument('--in_file', required=True, help='Input blast output.')
-parser.add_argument('--query_field', nargs="?", help='Query field number',const="1")
+parser.add_argument('--query_field', nargs="?", help='Query or subject field number',const="1")
 parser.add_argument('--source', required=True, help='Hitted database')
-parser.add_argument('--start_coord', nargs="?", help='Start of alignment in subject field number',const="7")
-parser.add_argument('--end_coord', nargs="?", help='End of alignment in query field number',const="8")
+parser.add_argument('--start_coord', nargs="?", help='Start of alignment in subject or query field number',const="7")
+parser.add_argument('--end_coord', nargs="?", help='End of alignment in query or subject field number',const="8")
 parser.add_argument('--score', nargs="?", help='Score field',const="11")
 parser.add_argument('--attribute', nargs="?", help='Attributes field numbers. It can accept multiple numbers separetd by a comma',const="2")
 parser.add_argument('--out', required=True, help='Output file name.')
@@ -38,7 +40,6 @@ if "," in ATTRIBUTE :
     ATTRIBUTE = [ i - 1 for i in ATTRIBUTE]
 else :
     ATTRIBUTE = int(ATTRIBUTE) - 1
-print(ATTRIBUTE)
 OUT = args.out
 
 #########################################################################
@@ -60,18 +61,27 @@ with open(IN_FILE, 'r') as file:
         queries.append(sl[QUERY])
         source.append(SOURCE)
         feature.append("Blast_hit")
-        feature_start.append(sl[START_COORD])
-        feature_end.append(sl[END_COORD])
+        #Check the strand of the hit, if starting coordinates are smaller than ending use + strand
+        if int(sl[START_COORD]) < int(sl[END_COORD]) :
+            feature_start.append(sl[START_COORD])
+            feature_end.append(sl[END_COORD])
+            strand.append("+")
+        #If ending coordinates are smaller than starting ones, reverse them in the output and specify - strand
+        else :
+            feature_start.append(sl[END_COORD])
+            feature_end.append(sl[START_COORD])
+            strand.append("-")
         score.append(sl[SCORE])
-        strand.append(".")
         phase.append(".")
         #joining all attributes values
-        tmp = []
-        for i in ATTRIBUTE :
-            tmp.append(sl[i])
-        tmp = '; '.join(tmp)
-        print(tmp)
-        attribute.append(tmp)
+        if ATTRIBUTE > 1 :
+            tmp = []
+            for i in ATTRIBUTE :
+                tmp.append(sl[i])
+            tmp = ';'.join(tmp)
+            attribute.append(tmp)
+        else :
+            attribute.append(sl[ATTRIBUTE])
      
 gff3_out = pd.DataFrame(
     {'#query': queries,
