@@ -1,27 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[59]:
-
-
-import pandas as pd
-
-inFile = "PTHR10071_PfamProsite_Hits.txt"
-Family = inFile.split("_")[0]
-Specie_count={Family:{}} 
-
-with open("PTHR10071_PfamProsite_Hits.txt") as file:
-    for line in file:
-        Specie = line.split("|")[0]
-        if not Specie in Specie_count[Family] :
-            Specie_count[Family][Specie] = int(1)
-        else :
-            Specie_count[Family][Specie] = Specie_count[Family][Specie] + 1
-pd.DataFrame.from_dict(Specie_count,orient='index')
-
-
-# In[17]:
-
 
 ########################################################################################################
 #  Convert a set of txt files in which each line correspond to a sequence in a table                   #
