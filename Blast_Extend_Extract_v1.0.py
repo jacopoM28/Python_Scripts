@@ -211,7 +211,7 @@ print("Extracting filtered extended blast hits...")
 
 #Extraction of extended hits with bedtools getfasta. Hits on the opposite strand are reversed complemented
 with open("%s_BlastExtendend.fasta" %OUT, 'w') as extracted_faa :
-    subprocess.run(["bedtools", "getfasta", "-name+", "-s","-fi", 
+    subprocess.run(["bedtools", "getfasta", "-name", "-s","-fi", 
                     GENOME , "-bed" , "%s_BlastExtendend.bed" %OUT], 
                    stdout=extracted_faa, stderr=subprocess.DEVNULL)
 
