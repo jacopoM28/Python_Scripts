@@ -4,8 +4,6 @@
 # In[ ]:
 
 
-#!/usr/bin/env python
-
 ##################################################################################################
 ##################################################################################################
 ##                                                                                              ## 
@@ -13,6 +11,9 @@
 ##                                                                                              ##
 ##################################################################################################
 ##################################################################################################
+#Author : Jacopo Martelossi
+#E-mail : jacopo.martelossi2@unibo.it
+
 
 #Automatic Blast-Extend-Extract process. Raw consensus libraries are blasted against the genome
 #a user-defined number of hits are extracted and aligned together with the raw consensus. Finally,
@@ -176,7 +177,7 @@ with open("%s_Blast.out" %OUT) as tsv:
             start.append(0)
         else :
             start.append(start_coord - int(EXTENSION))
-        #If the extension reach the end of the scaffold just use the end of the scaffold
+        #If the extension goes out the end of the scaffold just use the end of the scaffold
         if end_coord + int(EXTENSION) > scaffold_len[line[1]] :
             end.append(scaffold_len[line[1]])
         else :
