@@ -156,10 +156,12 @@ scaffold = []
 start = []
 end = []
 strand = []
+random_line = []
 
 #Extend
 with open("%s_Blast.out" %OUT) as tsv:
     for line in csv.reader(tsv, delimiter="\t") :
+        random_line.append("1")
         query.append(line[0])
         scaffold.append(line[1])
         start_coord = int(line[8])
@@ -169,9 +171,9 @@ with open("%s_Blast.out" %OUT) as tsv:
         if start_coord > end_coord :
             start_coord = int(line[9])
             end_coord = int(line[8])
-            strand = "-"
+            strand.append("-")
         else :
-            strand = "+"
+            strand.append("+")
         #If the extensin goes out the beggining of the scaffold, stop at the 1st base
         if start_coord - int(EXTENSION) < 1 :
             start.append(0)
@@ -262,6 +264,7 @@ for filename in os.listdir(directory):
         if MAFFT_OPT == 'einsi' :
             mafft_cline.genafpair = True
             mafft_cline.maxiterate = 1000
+            mafft_cline.adjustdirection = True
         stdout, stderr = mafft_cline()
         i += 1
         
