@@ -46,7 +46,7 @@ parser.add_argument('--mafft_strategy', choices=['einsi', 'auto'],help='Mafft_St
 parser.add_argument('--cutoff', help='Minimum length cutoff; default = 50')
 parser.add_argument('--blast_evalue', help='Blast evalue treshold; default = 10e-10')
 parser.add_argument('--hits_to_keep', help='N. of hits to keep for blast; default = 25')
-parser.add_argument('--blast_query_cov', help='query coverage cutoff value; default = 0.8')
+parser.add_argument('--blast_query_cov', help='query coverage cutoff value; default = 80')
 parser.add_argument('--min_Blast_Hits', help='Minum number of blast hits; default = 10')
 parser.add_argument('--num_threads', help='Number of cpus for Blast and mafft; default = 1')
 parser.add_argument('--extension', help='number of bp to extend blast hits; default = 2000pb')
