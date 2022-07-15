@@ -109,7 +109,7 @@ Ins_df= Ins_df.sort_index(ascending=True)                                       
 Ins_df.to_csv("%s_Insertions.bed" %OUT, sep="\t", index=False, header = False)          #Write bed file
 
 
-with open("%s_Insertions.fa" %OUT, 'w') as extracted_faa :                           #Extraction of insertion copies 
+with open("%s_Insertions.fa" %OUT, 'w') as extracted_faa :                           #Extraction of inserted copies
     subprocess.run(["bedtools", "getfasta", "-name","-fi", 
                     GENOME , "-bed" , "%s_Insertions.bed" %OUT], 
                    stdout=extracted_faa, stderr=subprocess.DEVNULL)
@@ -118,7 +118,7 @@ db = NcbimakeblastdbCommandline(dbtype="prot",                                  
                                    input_file= TE_ProtLib)
 stdout, stderr = db()
 
-blastn_cline = NcbiblastxCommandline(query = "%s_Insertions.fa" %OUT, num_threads = N_threads, #Blastx of insertions again TE proteins
+blastn_cline = NcbiblastxCommandline(query = "%s_Insertions.fa" %OUT, num_threads = N_threads, #Blastx of insertions against a TE protein db
                                      db=TE_ProtLib, evalue=1e-5, outfmt=6, 
                                      out="%s_Blast.out" %OUT,max_target_seqs = 1, max_hsps = 1)
 stdout, stderr = blastn_cline()
