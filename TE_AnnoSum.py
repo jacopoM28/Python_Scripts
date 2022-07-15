@@ -6,7 +6,7 @@
 #################################################################################
 #################################################################################
 
-#Script to summarize the results of a TE annotation and "quality" of a consensus library
+#Script to summarize the results of a TE annotation and assess the "quality" of a consensus library
 #Six metrics are currently implemented :
 #           1. Mean length of consensus sequences
 #           2. Number of annotated insertions
