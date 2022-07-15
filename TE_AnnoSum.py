@@ -24,7 +24,6 @@ import pandas as pd
 from Bio import SeqIO
 from Bio import AlignIO
 from Bio.Align import AlignInfo
-from Bio.Align.Applications import MafftCommandline
 from Bio.Blast.Applications import NcbiblastxCommandline
 from Bio.Blast.Applications import NcbimakeblastdbCommandline
 
