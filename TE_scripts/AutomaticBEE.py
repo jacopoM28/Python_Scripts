@@ -262,7 +262,7 @@ for filename in os.listdir(directory):
         print(filename, "(", i, "/", Blast_bed['query'].nunique(), ")")
         in_file = os.path.join(directory, filename)
         mafft_cline = MafftCommandline(input=in_file)
-        mafft_cline.thread = int(2)
+        mafft_cline.thread = int(NTHREADS)
         mafft_cline.adjustdirection = True
         mafft_cline.genafpair = True
         mafft_cline.maxiterate = 1000
