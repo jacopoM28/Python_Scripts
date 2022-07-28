@@ -4,7 +4,7 @@ TE scripts usefull in TE annotation and curation
 
  1. BEE_v2.0.py : Python script to produce a set of alignments with new raw consensus sequences tha can be manually curated (FOR MANUAL CURATION ONLY)
  2. AutomaticBEE.py : Python script to produce a set of alignments and automatically extended consensus sequences (FOR AUTOMATIC EXTENSION ONLY)
- 3. TE_AnnoSum.py : Python script usefull to calculate some summary statistics about a TE library and genome annotation. Usefull to compare annotation coming from different libraries.
+ 3. TE_AnnoSum.py : Python script usefull to calculate some summary statistics about a TE library and genome annotation. Usefull to compare the quality of different libraries.
  
 #### Suggested workflow
 
