@@ -19,7 +19,7 @@ TE scripts usefull in TE annotation and curation
 **e.** Combine manually and automatically curated libraries, remove redundancy and perform genome annotation of repeats.  
 **f.** Compare the new annotations with the one obtained with the raw library.  
 
-if genome annotation of repeats is generally better you should have improve the annotation of repeats in the genome
+if genome annotation of repeats is generally better congrats, you have improve your repeat annotation
 
 #### To Do :
  - Automatic removal of low complexity repeats and host genes from raw consensus sequences
