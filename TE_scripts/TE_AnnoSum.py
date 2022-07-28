@@ -9,8 +9,7 @@
 #Script to summarize the results of a TE annotation and assess the "quality" of a consensus library
 #Six metrics are currently implemented :
 #           1. Mean length of consensus sequences
-#           2. Number of annotated insertions
-#           3. Number of short annotated insertions (as reported by RepeatCraft (https://academic.oup.com/bioinformatics/article/35/6/1051/5079332)
+#           2. Number of annotated insertions)
 #           4. Number of "Known" insertions
 #           5. Mean length of insertions
 #           6. Number of significant Blastx results of the 10% longest insertions against a reference TE - derived protein db
@@ -68,7 +67,6 @@ Mean_Len = Length/i                                                             
 ################################################################################
 
 Known_ins = 0
-Nshort = 0
 
 Scaffold = []
 Start = []
@@ -89,8 +87,6 @@ with open(GFF) as f:
         InType = line.split(";")[3].split("=")[1]                                 #Insertion type (Fragmented or not)                                                   #Ins length
         if InsClass != "Unknown" :
             Known_ins += 1                                                        #Known insertions counter
-        if InType == "T" :
-            Nshort += 1                                                           #Fragmented insertions counter
 
 Mean_InsLen = sum(InsLen)/len(InsLen)
 Ins = len(InsLen)
