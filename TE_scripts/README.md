@@ -20,6 +20,6 @@ TE scripts usefull in TE annotation and curation
 **f.** Compare the new annotations with the one obtained with the raw library.  
 
 #### To Do :
- - Automatic removal of low complexity repeats and genes from raw consensus sequences
+ - Automatic removal of low complexity repeats and host genes from raw consensus sequences
  - Script to help identify raw consensus sequences that must be prioritized in the manual curation process (e.g longest one, with more hits, with proteins similarities)
  - Script to merge llibraries and remove duplicated consensus sequences ( i.e. prefering consensus with TE - realted protein evidences and highest length)
