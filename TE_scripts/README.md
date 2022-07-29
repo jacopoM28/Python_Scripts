@@ -1,7 +1,9 @@
 ### README
 
 #### !!! IMPORTANT !!!
-All scripts assume a RepeatModeler/RepeatMasker formatting stile. Es : Lapu_rnd1-family4_64#DNA
+All scripts assume a RepeatModeler/RepeatMasker formatting style. Es : Lapu_rnd1-family4_64#DNA
+
+---
 
 TE scripts usefull in TE annotation and curation
 
