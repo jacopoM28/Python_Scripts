@@ -16,7 +16,6 @@ TE scripts useful in TE annotation and curation
 
 **a**. Identify raw consensus sequences that must be prioritized in the manual curation process.  
 **b.** Run the BEE_v2.0.py script.  
-**c.** If consnensus sequences have been manually classified check the classification blasting N longest insertion against known TE-related protein db (To DO). 
 **d.** Run on the same raw consensus the AutomaticBEE.py script.  
 **e.** Annotate the genome indipendenlty with all three libraries (Manually curated, aumatically curated, raw).  
 **f.** Compare the three libraries and annotations with TE_AnnoSum.py script. This script could also help to check the manually curated library and eventually add anotations by manually screening the Blastx results.  
