@@ -141,11 +141,11 @@ print("Blasting filtered consensus library with a minimum query coverage of :", 
 
 #Create Blastdb
 db = NcbimakeblastdbCommandline(dbtype="nucl",
-                                   input_file= "Lapu.genomic.fa")
+                                   input_file=GENOME)
 stdout, stderr = db()
 #Blastn command
 blastn_cline = NcbiblastnCommandline(query = "./intermediate_files/%s.fasta" %output_name, num_threads = NTHREADS,
-                                     db="Lapu.genomic.fa" ,qcov_hsp_perc = QUERY_COV,
+                                     db=GENOME ,qcov_hsp_perc = QUERY_COV,
                                      evalue=EVALUE, outfmt=6, out="./intermediate_files/Blast.out", 
                                      perc_identity = IDENTITY)
 
