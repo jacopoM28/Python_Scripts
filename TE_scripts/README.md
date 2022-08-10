@@ -19,7 +19,7 @@ TE scripts useful in TE annotation and curation
 **c.** If consnensus sequences have been manually classified check the classification blasting N longest insertion against known TE-related protein db (To DO). 
 **d.** Run on the same raw consensus the AutomaticBEE.py script.  
 **e.** Annotate the genome indipendenlty with all three libraries (Manually curated, aumatically curated, raw).  
-**f.** Compare the three libraries and annotations with TE_AnnoSum.py script.  
+**f.** Compare the three libraries and annotations with TE_AnnoSum.py script. This script could also be usefull to check the manually curated library and eventually add anotations.  
 **g.** If necessary try to change Trimal parameters in AutomaticBEE.py script or to perform additional rounds of automatic curation.  
 **h.** When results of automatic curation are satisfactory (*e.g* similar to manual curation results), use the same parameters to automatically improve all consensus sequences not included in manual curation.  
 **i.** Classify automatically refinied conensus using *e.g* RepeatClassifier from the RepeatMasker package.  
@@ -32,4 +32,4 @@ TE scripts useful in TE annotation and curation
  - Automatic removal of low complexity repeats and host genes from raw consensus sequences.
  - Script to help identify raw consensus sequences that must be prioritized in the manual curation process (e.g longest one, with more hits, with proteins similarities).
  - Identify autonomous insertions.  
- - Annotation of consensus based on blastx of insertions and on similarity to known transposons.
+ - Annotation of consensus based on blastx of insertions (DONE!) and on similarity to known transposons.
