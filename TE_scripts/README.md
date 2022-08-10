@@ -5,11 +5,11 @@ All scripts assume a RepeatModeler/RepeatMasker formatting style. Es : Lapu_rnd1
 
 ---
 
-TE scripts usefull in TE annotation and curation
+TE scripts useful in TE annotation and curation
 
  1. BEE_v2.0.py : Python script to produce a set of alignments with new raw consensus sequences that MUST be manually curated (FOR MANUAL CURATION ONLY)
  2. AutomaticBEE.py : Python script to produce a set of alignments and automatically extended consensus sequences (FOR AUTOMATIC EXTENSION ONLY)
- 3. TE_AnnoSum.py : Python script usefull to calculate some summary statistics about a TE library and genome annotation. Usefull to compare the quality of different libraries.
+ 3. TE_AnnoSum.py : Python script useful to calculate some summary statistics about a TE library and genome annotation (*e.g* to compare the quality of different libraries).
  4. Merge_TELibraries.py : Merge multiple consensus libraries with redundant entries (*i.e* sequences with the same identifier before the classification) in order to keep only the "best one" (i.e. the classified and/or the longest one). It is possibile to provide a manually curated library that will be prioritize (*i.e.* all its sequences will be included in the final library).
  
 #### Possible workflow
@@ -29,4 +29,5 @@ TE scripts usefull in TE annotation and curation
 #### To Do :
  - Automatic removal of low complexity repeats and host genes from raw consensus sequences
  - Script to help identify raw consensus sequences that must be prioritized in the manual curation process (e.g longest one, with more hits, with proteins similarities).
- - Identify autonomous insertions 
+ - Identify autonomous insertions.
+ - Annotation of consensus based on blastx of insertions and on similarity to known transposons
