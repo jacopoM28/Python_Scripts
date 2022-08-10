@@ -212,7 +212,7 @@ print("########DONE")
 
 print("Extending the blast hits to", int(EXTENSION), "pb and filtering based on number of blast hits")
 
-subprocess.run(["samtools", "faidx", "Lapu.genomic.fa"],stderr=subprocess.DEVNULL)
+subprocess.run(["samtools", "faidx", GENOME],stderr=subprocess.DEVNULL)
 
 #Extend blast hits
 with open("./intermediate_files/Blast_Extended.bed", 'w') as Extended_Hits :
