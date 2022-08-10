@@ -217,13 +217,13 @@ subprocess.run(["samtools", "faidx", GENOME],stderr=subprocess.DEVNULL)
 #Extend blast hits
 with open("./intermediate_files/Blast_Extended.bed", 'w') as Extended_Hits :
     subprocess.run(["bedtools", "slop", "-i", "./intermediate_files/Blast.bed",
-                    "-g", "Lapu.genomic.fa.fai", "-b", str(EXTENSION)], 
+                    "-g", "%s.fai" %GENOME, "-b", str(EXTENSION)], 
                    stdout=Extended_Hits, stderr=subprocess.DEVNULL)
 
 #Extract them
 with open("./intermediate_files/BlastExtendend.fasta", 'w') as extracted_faa :
     subprocess.run(["bedtools", "getfasta", "-name+", "-s","-fi", 
-                    "Lapu.genomic.fa" , "-bed" , "./intermediate_files/Blast_Extended.bed"], 
+                    GENOME , "-bed" , "./intermediate_files/Blast_Extended.bed"], 
                    stdout=extracted_faa, stderr=subprocess.DEVNULL)
     
 #Parsing each transposon in a different multifasta 
