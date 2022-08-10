@@ -24,9 +24,9 @@ TE scripts useful in TE annotation and curation
 **h.** When results of automatic curation are satisfactory (*e.g* similar to manual curation results), use the same parameters to automatically improve all consensus sequences not included in manual curation.  
 **i.** Classify automatically refinied conensus using *e.g* RepeatClassifier from the RepeatMasker package.  
 **l.** Combine manually and automatically curated libraries using Merge_TELibraries.py. 
-**f.** Classify still unknown sequences using both blastx on N longest insertions and similarity to known consensus (*e.g* previously classified; To Do).  
-**g.** Remove redundancy following 80 - 80 rule.  
-**h.** Compare the new annotations with the one obtained with the raw library.  
+**m.** Classify still unknown sequences using both blastx on N longest insertions and similarity to known consensus (*e.g* previously classified; To Do).  
+**n.** Remove redundancy following 80 - 80 rule.  
+**o.** Compare the new annotations with the one obtained with the raw library.  
 
 #### To Do :
  - Automatic removal of low complexity repeats and host genes from raw consensus sequences.
