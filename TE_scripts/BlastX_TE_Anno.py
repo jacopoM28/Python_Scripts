@@ -74,8 +74,11 @@ end = []
 name = []
 
 df = pd.read_csv("./intermediate_files/Blast.out", sep="\t",header = None)
+#Remove insertions shorter than 100bp
 df.drop(df[df[3] < 100].index, inplace=True)
+#Sort by name, alignment length and bitscore
 df = df.sort_values([0, 3,11], ascending=[True,False,False ])
+#Keep only first 20 hits
 df = df.groupby(df[0]).head(20)
 df.reset_index(drop=True, inplace=True)
 
