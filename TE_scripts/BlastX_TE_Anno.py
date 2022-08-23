@@ -20,7 +20,7 @@
 #This script will blast all sequences of a TE library against a genome and will search
 #for copies with similarities to TE-Related proteins. By default an e-value of 1e-10
 #is used for blastn and an e-value of 1e-05 for Blastx. Moreover only 20 insertions longer than 
-#100 bp will be screened. If all insertions have a significant Blastx against
+#100 bp will be screened. If all significant Blastx are against
 #elements with the same annotation, the annotation is simply transfered to the consensus.
 #If not, the script will cechk if they belong at least at the same TE class.
 
