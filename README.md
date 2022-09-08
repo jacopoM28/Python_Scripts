@@ -1,2 +1,2 @@
 # Python_Scripts
-Usefull python scripts in genome analyses
+Useful python scripts in genomic analyses
