@@ -57,7 +57,7 @@ parser.add_argument('--num_threads', help='Number of cpus for Blast and mafft; d
 parser.add_argument('--extension', help='number of bp to extend blast hits; default = 1000pb')
 parser.add_argument('--blast_identity', help='Minimum identity treshold between consensus and each copy on the genome to be considered a significant hit; default 70')
 parser.add_argument('--gt', help='1 - (fraction of sequences with a gap allowed) default = 0.6')
-parser.add_argument('--st', help='Minimum average similarity allowed default = 0.6')
+parser.add_argument('--cons', help='Minimum average similarity allowed default = 60')
 
 args = parser.parse_args()
 
@@ -100,10 +100,10 @@ if args.gt is None :
     GT = 0.6
 else :
     GT = args.gt
-if args.st is None :
-    ST = 0.6
+if args.cons is None :
+    cons = 60
 else :
-    ST = args.gt
+    cons = args.cons
     
 print("\n")
 print("#################################################")
@@ -293,7 +293,7 @@ for filename in os.listdir(directory):
             upper.append(record)
         SeqIO.write(upper, "%s" %in_file , "fasta")
         #Remove poorly aligned positions
-        subprocess.run(["trimal", "-gt", str(GT), "-st", str(ST), "-in", in_file, "-out", "./Cleaned_Alignments/%s.trimmed" %filename ],
+        subprocess.run(["trimal", "-gt", str(GT), "-cons", str(cons), "-in", in_file, "-out", "./Cleaned_Alignments/%s.trimmed" %filename ],
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
 print("Building up consensus...")
