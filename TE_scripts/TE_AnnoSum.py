@@ -16,6 +16,7 @@
 #           5. Mean length of insertions
 #           6. Number of significant Blastx results of the 10% longest insertions against a reference TE - derived protein db
 #           7. Number of significant Blastx results on consensuxs sequences
+##IMPORTANT: No header must be present in the GFF file or the script will rise an error "list indes out of range" in line 104
 
 #Dependecies necessary : Blast, Bedtools Trimal
 #Python libraries : Biopython, Pandas
