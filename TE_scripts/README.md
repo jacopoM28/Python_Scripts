@@ -7,11 +7,11 @@ All scripts assume a RepeatModeler/RepeatMasker formatting style. Es : Lapu_rnd1
 
 TE scripts useful in TE annotation and curation
 
- 1. BEE_v3.0.py : Python script to produce a set of alignments with new raw consensus sequences that MUST be manually curated (FOR MANUAL CURATION ONLY)
- 2. AutomaticBEE_v2.0.py : Python script to produce a set of alignments and automatically extended consensus sequences (FOR AUTOMATIC EXTENSION ONLY)
- 3. TE_AnnoSum.py : Python script useful to calculate some summary statistics about a TE library and genome annotation (*e.g* to compare the quality of different libraries).
- 4. Merge_TELibraries.py : Merge multiple consensus libraries with redundant entries (*i.e* sequences with the same identifier before the classification) in order to keep only the "best one" (i.e. the classified and/or the longest one). It is possibile to provide a manually curated library that will be prioritize (*i.e.* all its sequences will be included in the final library).
- 5. BlastX_TE_Anno.py : Annotation of consensus sequences based on Blastx of the 20 longer instertions for each one. If all significant hits are against the same TE (*e.g.* DNA/hAT; LINE/R2; DNA/TcMar-Trigger) the annotation is transferred to the element. If not the script will check the class level.
+ 1. **BEE_v3.0.py** : Python script to produce a set of alignments with new raw consensus sequences that MUST be manually curated (FOR MANUAL CURATION ONLY)
+ 2. **AutomaticBEE_v2.0.py** : Python script to produce a set of alignments and automatically extended consensus sequences (FOR AUTOMATIC EXTENSION ONLY)
+ 3. **TE_AnnoSum.py** : Python script useful to calculate some summary statistics about a TE library and genome annotation (*e.g* to compare the quality of different libraries).
+ 4. **Merge_TELibraries.py** : Merge multiple consensus libraries with redundant entries (*i.e* sequences with the same identifier before the classification) in order to keep only the "best one" (i.e. the classified and/or the longest one). It is possibile to provide a manually curated library that will be prioritize (*i.e.* all its sequences will be included in the final library).
+ 5. **BlastX_TE_Anno.py** : Annotation of consensus sequences based on Blastx of the 20 longer instertions for each one. If all significant hits are against the same TE (*e.g.* DNA/hAT; LINE/R2; DNA/TcMar-Trigger) the annotation is transferred to the element. If not the script will check the class level.
  
 #### Possible workflow
 
