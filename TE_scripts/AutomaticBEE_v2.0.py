@@ -14,10 +14,10 @@
 
 #Automatic Blast-Extend-Extract process. Raw consensus libraries are blasted against the genome
 #a user-defined number of hits are extracted and aligned. Poorly aligned regions are removed with 
-#trimal and a consensus sequences is generated with CIAlign. All optional arguments 
+#trimal/CIAlign and a consensus sequences is generated. All optional arguments 
 #have default values. Flags allow to personalize the process, if you want to change more parameters
 #for blast, mafft and/or number of hits to align, you should change the corresponding lines. 
-#By default a maximum of 30 sequences are extracted to build up consensus, if you want to change this behaviour 
+#By default a maximum of 50 sequences are extracted to build up consensus, if you want to change this behaviour 
 #look at line 151
 
 ##IMPORTANT!!!!!!
@@ -56,8 +56,6 @@ parser.add_argument('--min_Blast_Hits', help='Minum number of blast hits; defaul
 parser.add_argument('--num_threads', help='Number of cpus for Blast and mafft; default = 1')
 parser.add_argument('--extension', help='number of bp to extend blast hits; default = 1000pb')
 parser.add_argument('--blast_identity', help='Minimum identity treshold between consensus and each copy on the genome to be considered a significant hit; default 70')
-parser.add_argument('--gt', help='1 - (fraction of sequences with a gap allowed) default = 0.6')
-parser.add_argument('--cons', help='Minimum average similarity allowed default = 60')
 
 args = parser.parse_args()
 
@@ -96,14 +94,6 @@ if args.extension is None :
     EXTENSION = 1000
 else :
     EXTENSION = args.extension
-if args.gt is None :
-    GT = 0.6
-else :
-    GT = args.gt
-if args.cons is None :
-    cons = 60
-else :
-    cons = args.cons
     
 print("\n")
 print("#################################################")
@@ -132,13 +122,10 @@ SeqIO.write(New_Sequences, "./intermediate_files/%s.fasta" %output_name ,"fasta"
 print("----> Your filtered raw consensus library has :", len(New_Sequences), "sequences")
 print("########DONE")
 
-
+print("Blasting filtered consensus library with a minimum query coverage of :", QUERY_COV)
 ##########################################################################################################
 ##------------------------------------------Blast--------------------------------------------------------#
 ##########################################################################################################
-
-print("Blasting filtered consensus library with a minimum query coverage of :", QUERY_COV)
-
 #Create Blastdb
 db = NcbimakeblastdbCommandline(dbtype="nucl",
                                    input_file=GENOME)
@@ -159,7 +146,6 @@ output, error = process.communicate()
 #########################################################################################################
 ##------------------------------------FROM BLAST TO BED-------------------------------------------------#
 #########################################################################################################
-
 query_count = {}
 query = []
 scaffold = []
@@ -205,11 +191,9 @@ Blast_bed.to_csv("./intermediate_files/Blast.bed", sep="\t", index=False, header
 print("----> After filtering you are analyzing :", Blast_bed['query'].nunique(), "consensus with more than :", 
       int(MIN_HITS) -1, "hits on the genome."  )
 print("########DONE")
-
 #########################################################################################################
 ##---------------------------------------------EXTEND and EXTRACT---------------------------------------#
 #########################################################################################################
-
 print("Extending the blast hits to", int(EXTENSION), "pb and filtering based on number of blast hits")
 
 subprocess.run(["samtools", "faidx", GENOME],stderr=subprocess.DEVNULL)
@@ -219,14 +203,50 @@ with open("./intermediate_files/Blast_Extended.bed", 'w') as Extended_Hits :
     subprocess.run(["bedtools", "slop", "-i", "./intermediate_files/Blast.bed",
                     "-g", "%s.fai" %GENOME, "-b", str(EXTENSION)], 
                    stdout=Extended_Hits, stderr=subprocess.DEVNULL)
+    
+#Sort the bed file
+with open("./intermediate_files/Blast_Extended.sorted.bed", 'w') as Extended_sorted_Hits :
+    subprocess.run(["bedtools", "sort", "-i", "./intermediate_files/Blast_Extended.bed"], 
+                   stdout=Extended_sorted_Hits, stderr=subprocess.DEVNULL)
+    
+#---------------------Merge overlapping hits coming from the same consensus-----------------------------# 
+df = pd.read_csv("intermediate_files/Blast_Extended.sorted.bed",sep="\t",header = None)
+df.columns = ['scaffold', 'start', 'end', 'name','evalue','strand']
 
-#Extract them
+#Merge scaffold and name columns. This allow us to have unique identifiers
+df["scaffold"] = df["name"] + "_MERGE_" + df["scaffold"]
+df.sort_values(['scaffold', 'start'])
+df.to_csv("./intermediate_files/Blast_Extended.tmp",sep="\t",index=False, header = False)
+
+#Sort again
+with open("./intermediate_files/Blast_Extended.sorted.tmp", 'w') as Extended_sorted_Hits :
+    subprocess.run(["bedtools", "sort", "-i", "./intermediate_files/Blast_Extended.tmp"], 
+                   stdout=Extended_sorted_Hits, stderr=subprocess.DEVNULL)
+
+#Merge overlapping intervals or closer than 100bp
+with open("./intermediate_files/Blast_Extended.sorted.merged.bed", 'w') as Extended_merged_Hits :
+    subprocess.run(["bedtools", "merge", '-d', '100' , '-s', "-c","4,5,6", "-o", "distinct,mean,distinct", "-i",
+                    "./intermediate_files/Blast_Extended.sorted.tmp"], 
+                   stdout=Extended_merged_Hits, stderr=subprocess.DEVNULL)
+
+#Remove the name ID from the first column
+bashCommand = "sed -i 's/^.*_MERGE_//' ./intermediate_files/Blast_Extended.sorted.merged.bed"
+process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,shell=True)
+output, error = process.communicate()
+
+bashCommand = '''awk -v OFS="\t" -F"\t" '{print$1,$2,$3,$5,$6,$7}' ./intermediate_files/Blast_Extended.sorted.merged.bed > ./intermediate_files/Blast_Extended.sorted.merged_FINAL.bed'''
+process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,shell=True)
+output, error = process.communicate()
+
+
+
 with open("./intermediate_files/BlastExtendend.fasta", 'w') as extracted_faa :
     subprocess.run(["bedtools", "getfasta", "-name", "-s","-fi", 
-                    GENOME , "-bed" , "./intermediate_files/Blast_Extended.bed"], 
+                    GENOME , "-bed" , "./intermediate_files/Blast_Extended.sorted.merged_FINAL.bed"], 
                    stdout=extracted_faa, stderr=subprocess.DEVNULL)
-    
-#Parsing each transposon in a different multifasta 
+
+
+#Parse each transposon in a different multifasta 
 os.mkdir("Extracted_Sequences")
 
 TransposonsID = [] 
@@ -246,41 +266,42 @@ for element in TransposonsID :
             Sequences.append(record)
     SeqIO.write(Sequences,"Extracted_Sequences/%s.fasta" %element, "fasta")
 
-    
+print("########DONE")
+print("Aligning the extended insertions...")
 #########################################################################################################
 #---------------------------------------------ALIGN-----------------------------------------------------#
 #########################################################################################################
-
 os.mkdir("Alignments")
-
 directory = './Extracted_Sequences'
 
-i = 1
-for filename in os.listdir(directory):
+subprocess.run('for i in ./Extracted_Sequences/*.fasta; do mafft --auto --thread 20 --adjustdirection "$i" > "$i".mafft ; done', shell=True)
+subprocess.run('mv Extracted_Sequences/*mafft Alignments/;', shell=True)
+
+#i = 1
+#for filename in os.listdir(directory):
     #Check that we are using only fasta files and setting up mafft parameters
-    if filename.endswith(".fasta") :
-        print(filename, "(", i, "/", Blast_bed['query'].nunique(), ")")
-        in_file = os.path.join(directory, filename)
-        mafft_cline = MafftCommandline(input=in_file)
-        mafft_cline.thread = int(NTHREADS)
-        mafft_cline.adjustdirection = True
-        mafft_cline.genafpair = True
-        mafft_cline.maxiterate = 1000
-        stdout, stderr = mafft_cline()
-        i += 1
+#    if filename.endswith(".fasta") :
+#        print(filename, "(", i, "/", Blast_bed['query'].nunique(), ")")
+#        in_file = os.path.join(directory, filename)
+#        mafft_cline = MafftCommandline(input=in_file)
+#        mafft_cline.thread = int(NTHREADS)
+#        mafft_cline.adjustdirection = True
+#        mafft_cline.genafpair = True
+#        mafft_cline.maxiterate = 1000
+#        stdout, stderr = mafft_cline()
+#        i += 1
         
         
-        with open("./Alignments/%s.mafft" %filename, "w") as output:
-            output.write(stdout)
-            align = AlignIO.read("./Alignments/%s.mafft" %filename, "fasta")
+#        with open("./Alignments/%s.mafft" %filename, "w") as output:
+#            output.write(stdout)
+#            align = AlignIO.read("./Alignments/%s.mafft" %filename, "fasta")
             
 print("########DONE")
-
+print("1st Trimal cleaning round...")
 ############################################################################################################
-#----------------------------------------------CLEAN-------------------------------------------------------#
+#----------------------------------------------1st CLEAN---------------------------------------------------#
 ############################################################################################################
-
-os.mkdir("Cleaned_Alignments")
+os.mkdir("1st.Cleaned_Alignments")
 directory = './Alignments/'
 
 for filename in os.listdir(directory):
@@ -292,24 +313,59 @@ for filename in os.listdir(directory):
             record.seq = record.seq.upper()
             upper.append(record)
         SeqIO.write(upper, "%s" %in_file , "fasta")
-        #Remove poorly aligned positions
-        subprocess.run(["trimal", "-gt", str(GT), "-cons", str(cons), "-in", in_file, "-out", "./Cleaned_Alignments/%s.trimmed" %filename ],
+        #Remove gappy positions. Here trimal is used with quite relaxed parameters. Indeed we must remove
+        #internal deletions because otherwise CIAalign wil crop the sequence at that position however we must not
+        #remove to many postion beacuse are then necessary to CIAlign to trim sequences at the ends
+        subprocess.run(["trimal", "-gt", "0.4", "-in", in_file, "-out",
+                        "./1st.Cleaned_Alignments/%s.trimmed" %filename ],
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
-print("Building up consensus...")
-print("\n")
-
+print("########DONE")
+print("Cropping ends of sequences...")
 ############################################################################################################
-#------------------------------------------------Consensus-------------------------------------------------#
+#------------------------------------------------CIAlign---------------------------------------------------#
 ############################################################################################################
-
-os.mkdir("Cons_Alignments")
-directory = './Cleaned_Alignments/'
+os.mkdir("CIAlign")
+directory = './1st.Cleaned_Alignments/'
 
 for filename in os.listdir(directory):
     if filename.endswith(".trimmed") :
         in_file = os.path.join(directory, filename)
         seq_name = filename.split(".")[0]
+        print(seq_name)
+        #Crop ends of sequences with CIAalign... This will introduce gaps near the boundaries of the TE that will, likely,
+        #be targeted by the next Trimal round
+        subprocess.run(["CIAlign","--crop_ends", "--crop_ends_redefine_perc", "0.5", "--crop_ends_mingap_perc",
+                        "0.02", "--infile", in_file, "--outfile_stem", "./CIAlign/%s" %seq_name],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+print("########DONE")
+print("2nd Trimal cleaning round...")
+############################################################################################################
+#----------------------------------------------2nd CLEAN---------------------------------------------------#
+############################################################################################################
+os.mkdir("2nd.Cleaned_Alignments")
+directory = './CIAlign/'
+
+for filename in os.listdir(directory):
+    if filename.endswith(".fasta") :
+        in_file = os.path.join(directory, filename)
+        subprocess.run(["trimal", "-gt", "0.6", "-st", "0.4", "-in", in_file, "-out",
+                        "./2nd.Cleaned_Alignments/%s.2nd.trimmed" %filename ],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+print("########DONE")
+print("Building up consensus...")
+############################################################################################################
+#------------------------------------------------Consensus-------------------------------------------------#
+############################################################################################################
+os.mkdir("Cons_Alignments")
+directory = './2nd.Cleaned_Alignments/'
+
+for filename in os.listdir(directory):
+    if filename.endswith(".trimmed") :
+        in_file = os.path.join(directory, filename)
+        print(in_file)
+        seq_name = filename.split("_cleaned")[0].replace("_cleaned","")
         print(seq_name)
         #Extracting annotation of the elements
         with open(in_file) as f:
@@ -317,11 +373,12 @@ for filename in os.listdir(directory):
             clas = first_line.split("__")[0].replace(">","").split("#")[1]
             print(clas)
         #Build up consensus with CIAlign and ignorig gaps (They have been already delated by Trimal)
-        subprocess.run(["CIAlign", "--infile", in_file, "--outfile_stem", "./Cons_Alignments/%s" %seq_name,
+        subprocess.run(["CIAlign","--infile", in_file, "--outfile_stem", "./Cons_Alignments/%s" %seq_name,
                         "--make_consensus", "--consensus_name", "%s#%s" % (seq_name,clas),
                         "--consensus_type", "majority_nongap"],
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
+
+#----------------------------------------------------------------------------------------------------------#
 
 #Putting all consensus together
 directory = "./Cons_Alignments"
