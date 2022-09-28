@@ -15,8 +15,8 @@ TE scripts useful in TE annotation and curation
 #### Possible workflow
 
 **a**. Identify raw consensus sequences that must be prioritized in the manual curation process.  
-**b.** Run the BEE_v2.0.py script.  
-**d.** Run on the same raw consensus the AutomaticBEE.py script.  
+**b.** Run the BEE_v3.0.py script.  
+**d.** Run on the same raw consensus the AutomaticBEE_v2.0.py script.  
 **e.** Annotate the genome indipendenlty with all three libraries (Manually curated, aumatically curated, raw).  
 **f.** Compare the three libraries and annotations with TE_AnnoSum.py script. This script could also help to check the manually curated library and eventually add anotations by manually screening the Blastx results.  
 **g.** If necessary try to change Trimal parameters in AutomaticBEE.py script or to perform additional rounds of automatic curation.  
