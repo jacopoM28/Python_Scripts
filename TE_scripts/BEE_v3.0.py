@@ -22,6 +22,9 @@
 #for blast and/or mafft you should change the corresponding lines. By default a maximum of 50 sequences 
 #are extracted to build up consensus, if you want to change this behaviour look at line 140
 
+#V2: Removed max_hsps and max_target_seqs; added an awk command to kee only top 50 blast hits of raw cons
+#V3: Added merging of overlapping or close (<100bp) blast hits of raw consensus
+
 ##IMPORTANT!!!!!!
 #Consensus sequences are created with emboss cons, gaps are coded as <n>, all sequences MUST be
 #manually curated!
@@ -102,6 +105,8 @@ print("#STARTING BLAST-EXTEND-EXTRACT PROCESS#")
 print("#######################################")
 print("\n")
 
+os.mkdir("intermediate_files")
+
 #######################################################################################################    
 ##-----------------------------Cleaning raw library based on cut-off value----------------------------#
 #######################################################################################################
@@ -131,71 +136,51 @@ db = NcbimakeblastdbCommandline(dbtype="nucl",
 stdout, stderr = db()
 blastn_cline = NcbiblastnCommandline(query = "%s.fasta" %output_name, num_threads = NTHREADS,
                                      db=GENOME ,qcov_hsp_perc = QUERY_COV,
-                                     evalue=EVALUE, outfmt=6, out="Blast.out", perc_identity = IDENTITY)
+                                     evalue=EVALUE, outfmt=6, out="./intermediate_files/Blast.out", perc_identity = IDENTITY)
 print("---> Blast command line :", blastn_cline,".")
 print("########DONE")
 
 stdout, stderr = blastn_cline()
 
-bashCommand = "awk '{ if (++count[$1] <= 50) print $0 }' Blast.out> Blast.out.filtered" #Change the default 50 to keep more or less sequences
+bashCommand = "awk '{ if (++count[$1] <= 50) print $0 }' ./intermediate_files/Blast.out> ./intermediate_files/Blast.out.filtered" #Change the default 50 to keep more or less sequences
 process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,shell=True)
 output, error = process.communicate()
 
 #########################################################################################################
-##----------------------------------------------EXTEND--------------------------------------------------#
+##------------------------------------FROM BLAST TO BED-------------------------------------------------#
 #########################################################################################################
-
-print("Extending the blast hits to", int(EXTENSION), "pb and filtering based on number of blast hits")
-
-scaffold_len = {}
-
-#Storing informations about length of scaffolds...
-for record in SeqIO.parse(GENOME, "fasta"):
-    scaffold_len[record.id] = int(len(record.seq))
-
-
 query_count = {}
 query = []
 scaffold = []
 start = []
 end = []
 strand = []
-random_line = []
+evalue = []
 
-#Extend
-with open("Blast.out.filtered") as tsv:
+with open("./intermediate_files/Blast.out.filtered") as tsv:
     for line in csv.reader(tsv, delimiter="\t") :
-        random_line.append("1")
         query.append(line[0])
         scaffold.append(line[1])
         start_coord = int(line[8])
         end_coord = int(line[9])
-        #if starting coordinates > ending means that the transposon is present in the opposite strand. 
-        #We can just switch starting and ending coordinates and add negative strand feature
+        evalue.append(line[10])
+        #Switch coordinates for hits on the negative strand
         if start_coord > end_coord :
             start_coord = int(line[9])
             end_coord = int(line[8])
             strand.append("-")
         else :
             strand.append("+")
-        #If the extensin goes out the beggining of the scaffold, stop at the 1st base
-        if start_coord - int(EXTENSION) < 1 :
-            start.append(0)
-        else :
-            start.append(start_coord - int(EXTENSION))
-        #If the extension goes out the end of the scaffold just use the end of the scaffold
-        if end_coord + int(EXTENSION) > scaffold_len[line[1]] :
-            end.append(scaffold_len[line[1]])
-        else :
-            end.append(end_coord + int(EXTENSION))
+        start.append(start_coord)
+        end.append(end_coord)
         if not line[0] in query_count :
             query_count[line[0]] = 1
         else :
             query_count[line[0]] += 1
 
-#Creation of a dataframe with extended coordinates
-Blast_bed = pd.DataFrame({"scaffold" : scaffold, "start" : start, "end" : end, "query" : query, 
-                          "strand" : strand})
+#Creation of a dataframe with coordinates
+Blast_bed = pd.DataFrame({"scaffold" : scaffold, "start" : start, "end" : end, "query" : query,
+                          "evalue" : evalue ,"strand" : strand})
 
 #Filter transposon based on number of hits
 for key,value in query_count.items() :
@@ -204,22 +189,61 @@ for key,value in query_count.items() :
         Blast_bed.drop(indexNames , inplace=True)    
 
 #Saving filtered dataframe in a bed file
-Blast_bed.to_csv("%s_BlastExtendend.bed" %OUT, sep="\t", index=False, header = False)
+Blast_bed.to_csv("./intermediate_files/Blast.bed", sep="\t", index=False, header = False)
 
 print("----> After filtering you are analyzing :", Blast_bed['query'].nunique(), "consensus with more than :", 
       int(MIN_HITS) -1, "hits on the genome."  )
 print("########DONE")
+#########################################################################################################
+##---------------------------------------------EXTEND and EXTRACT---------------------------------------#
+#########################################################################################################
+print("Extending the blast hits to", int(EXTENSION), "pb and filtering based on number of blast hits")
 
-####################################################################################################
-#-------------------------------------------------EXTRACT------------------------------------------#
-####################################################################################################
+subprocess.run(["samtools", "faidx", GENOME],stderr=subprocess.DEVNULL)
 
-print("Extracting filtered extended blast hits...")
+#Extend blast hits
+with open("./intermediate_files/Blast_Extended.bed", 'w') as Extended_Hits :
+    subprocess.run(["bedtools", "slop", "-i", "./intermediate_files/Blast.bed",
+                    "-g", "%s.fai" %GENOME, "-b", str(EXTENSION)], 
+                   stdout=Extended_Hits, stderr=subprocess.DEVNULL)
+    
+#Sort the bed file
+with open("./intermediate_files/Blast_Extended.sorted.bed", 'w') as Extended_sorted_Hits :
+    subprocess.run(["bedtools", "sort", "-i", "./intermediate_files/Blast_Extended.bed"], 
+                   stdout=Extended_sorted_Hits, stderr=subprocess.DEVNULL)
+    
+#---------------------Merge overlapping hits coming from the same consensus-----------------------------# 
+df = pd.read_csv("intermediate_files/Blast_Extended.sorted.bed",sep="\t",header = None)
+df.columns = ['scaffold', 'start', 'end', 'name','evalue','strand']
 
-#Extraction of extended hits with bedtools getfasta. Hits on the opposite strand are reversed complemented
-with open("%s_BlastExtendend.fasta" %OUT, 'w') as extracted_faa :
+#Merge scaffold and name columns. This allow us to have unique identifiers
+df["scaffold"] = df["name"] + "_MERGE_" + df["scaffold"]
+df.sort_values(['scaffold', 'start'])
+df.to_csv("./intermediate_files/Blast_Extended.tmp",sep="\t",index=False, header = False)
+
+#Sort again
+with open("./intermediate_files/Blast_Extended.sorted.tmp", 'w') as Extended_sorted_Hits :
+    subprocess.run(["bedtools", "sort", "-i", "./intermediate_files/Blast_Extended.tmp"], 
+                   stdout=Extended_sorted_Hits, stderr=subprocess.DEVNULL)
+
+#Merge overlapping or closer than 100bp intervals
+with open("./intermediate_files/Blast_Extended.sorted.merged.bed", 'w') as Extended_merged_Hits :
+    subprocess.run(["bedtools", "merge", '-d', '100' , '-s', "-c","4,5,6", "-o", "distinct,mean,distinct", "-i",
+                    "./intermediate_files/Blast_Extended.sorted.tmp"], 
+                   stdout=Extended_merged_Hits, stderr=subprocess.DEVNULL)
+
+#Remove the name ID from the first column
+bashCommand = "sed -i 's/^.*_MERGE_//' ./intermediate_files/Blast_Extended.sorted.merged.bed"
+process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,shell=True)
+output, error = process.communicate()
+
+bashCommand = '''awk -v OFS="\t" -F"\t" '{print$1,$2,$3,$5,$6,$7}' ./intermediate_files/Blast_Extended.sorted.merged.bed > ./intermediate_files/Blast_Extended.sorted.merged_FINAL.bed'''
+process = subprocess.Popen(bashCommand, stdout=subprocess.PIPE,shell=True)
+output, error = process.communicate()
+
+with open("./intermediate_files/BlastExtendend.fasta", 'w') as extracted_faa :
     subprocess.run(["bedtools", "getfasta", "-name", "-s","-fi", 
-                    GENOME , "-bed" , "%s_BlastExtendend.bed" %OUT], 
+                    GENOME , "-bed" , "./intermediate_files/Blast_Extended.sorted.merged_FINAL.bed"], 
                    stdout=extracted_faa, stderr=subprocess.DEVNULL)
 
 #Parsing each transposon in a different multifasta and add original consensus    
@@ -227,14 +251,14 @@ os.mkdir("Extracted_Sequences")
 
 TransposonsID = [] 
 
-for record in SeqIO.parse("%s_BlastExtendend.fasta" %OUT, "fasta"):
+for record in SeqIO.parse("./intermediate_files/BlastExtendend.fasta", "fasta"):
     ID = record.id.split("#")
     TransposonsID.append(ID[0])
 TransposonsID = set(TransposonsID)
 
 for element in TransposonsID :
     Sequences = []
-    for record in SeqIO.parse("%s_BlastExtendend.fasta" %OUT, "fasta"):
+    for record in SeqIO.parse("./intermediate_files/BlastExtendend.fasta", "fasta"):
         if record.id.split("#")[0] == element :
             #Susbtituting : with _ in output fasta files for downstream analyses
             record.id = record.id.replace(":", "_")
