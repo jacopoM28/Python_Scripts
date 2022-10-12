@@ -51,7 +51,6 @@ parser = argparse.ArgumentParser(description='Blast-Extend-Extract script')
 parser.add_argument('--genome', required=True, help='Input genome fasta file')
 parser.add_argument('--lib', required=True, help='raw consensus library')
 parser.add_argument('--out', required=True, help='prefix output file')
-parser.add_argument('--mafft_strategy', choices=['einsi', 'auto'],help='Mafft_Strategy', required=True, type=str)
 parser.add_argument('--cutoff', help='Minimum length cutoff; default = 50')
 parser.add_argument('--blast_evalue', help='Blast evalue treshold; default = 10e-10')
 parser.add_argument('--blast_query_cov', help='query coverage cutoff value; default = 80')
@@ -66,7 +65,6 @@ args = parser.parse_args()
 GENOME =  args.genome
 LIBRARY = args.lib
 OUT = args.out
-MAFFT_OPT = args.mafft_strategy
 
 #Parsing arguments with default values
 
@@ -272,30 +270,14 @@ print("########DONE")
 #---------------------------------------------ALIGN-----------------------------------------------------#
 #########################################################################################################
 
-print("Aligning with mafft and", MAFFT_OPT, "strategy.")
+print("Aligning with mafft")
 
 os.mkdir("Alignments")
-
 directory = './Extracted_Sequences'
 
-i = 1
-for filename in os.listdir(directory):
-    #Check that we are using only fasta files and setting mafft parameters
-    if filename.endswith(".fasta") :
-        print(filename, "(", i, "/", Blast_bed['query'].nunique(), ")")
-        in_file = os.path.join(directory, filename)
-        mafft_cline = MafftCommandline(input=in_file)
-        mafft_cline.thread = int(NTHREADS)
-        mafft_cline.adjustdirection = True
-        if MAFFT_OPT == 'einsi' :
-            mafft_cline.genafpair = True
-            mafft_cline.maxiterate = 1000
-        stdout, stderr = mafft_cline()
-        i += 1
-        
-        with open("./Alignments/%s.mafft" %filename, "w") as output:
-            output.write(stdout)
-            align = AlignIO.read("./Alignments/%s.mafft" %filename, "fasta")
+subprocess.run('for i in ./Extracted_Sequences/*.fasta; do mafft --auto --thread 20 --adjustdirection "$i" > "$i".mafft ; done', shell=True)
+subprocess.run('mv Extracted_Sequences/*mafft Alignments/;', shell=True)
+   
             
 print("########DONE")
             
