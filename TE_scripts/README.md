@@ -30,4 +30,3 @@ TE scripts useful in TE annotation and curation
  - Automatic removal of low complexity repeats and host genes from raw consensus sequences.
  - Script to help identify raw consensus sequences that must be prioritized in the manual curation process (e.g longest one, with more hits, with proteins similarities).
  - Identify autonomous insertions.  
- - Annotation of consensus based on blastx of insertions (DONE!) and on similarity to known transposons.
