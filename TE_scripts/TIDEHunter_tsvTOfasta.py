@@ -38,7 +38,7 @@ for ind in df.index:
         #Store tandem repeat sequences
         seq = df['consSeq'][ind].strip()
         #Create description
-        descript = "consLen=" + str(df['copyNum'][consLen]) + "copyNum=" + str(df['copyNum'][ind]) + " " + "readLen=" + str(df['readLen'][ind])
+        descript = "consLen=" + str(df['consLen'][ind]) + "copyNum=" + str(df['copyNum'][ind]) + " " + "readLen=" + str(df['readLen'][ind])
         #Create SeqRecord object
         record = SeqRecord(Seq(seq),id=name, name="Tandem repeat",
                    description=descript)
