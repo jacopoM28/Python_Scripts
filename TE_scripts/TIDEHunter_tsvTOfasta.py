@@ -47,5 +47,5 @@ for ind in df.index:
 #Write everything to a fasta file
 SeqIO.write(Tandems, "%s_Tandem.Repeats.fasta" %OUT, "fasta")
 #Remove redundancy in the output
-subprocess.run('cd-hit-est -i %s_Tandem.Repeats.fasta -o %s_Tandem.Repeats_nr.fasta -d 0' % (OUT, OUT), shell=True)
+subprocess.run('cd-hit-est -T 0 -i %s_Tandem.Repeats.fasta -o %s_Tandem.Repeats_nr.fasta -d 0' % (OUT, OUT), shell=True)
 
