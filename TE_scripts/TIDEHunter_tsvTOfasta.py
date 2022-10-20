@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# coding: utf-8
 
-# In[30]:
-
+#Author : Jacopo Martelossi
+#E-mail : jacopo.martelossi2@unibo.it
 
 import os
 import sys
