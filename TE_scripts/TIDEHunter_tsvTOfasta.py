@@ -21,7 +21,7 @@ parser.add_argument('--out', required=True, help='prefix output fasta file')
 
 args = parser.parse_args()
 OUT = args.out
-IN = OUT = args.in_tsv
+IN = args.in_tsv
 
 #------------------------------------------MAIN--------------------------------------------------#
 df = pd.read_csv(IN,sep="\t",header=None)
