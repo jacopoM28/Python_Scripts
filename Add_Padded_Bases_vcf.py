@@ -37,14 +37,3 @@ with open(VCF) as f:
                     line[4] = nuc.seq + line[4]
                     print('\t'.join(line))
 
-
-# In[92]:
-
-
-print("#SNIFFLES_DEL",genome["NC_047559.1"][28813:28818]) #SNIFFLES DEL
-print("#BSV_INS", genome["NC_047559.1"][34141:34148]) #PBSV INS
-print("#SNIFFLES_INS", genome["NC_047559.1"][577839:577845]) #SNIFFLES INS
-print("#PBSV_DEL", genome["NC_047559.1"][709547:709560]) #PBSV DEL
-
-#SNIFFLES DEL == Correct
-
